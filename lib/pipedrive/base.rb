@@ -6,16 +6,16 @@ module Pipedrive
 
   # Globally set request headers
   HEADERS = {
-    "User-Agent"    => "Ruby.Pipedrive.Api",
-    "Accept"        => "application/json",
-    "Content-Type"  => "application/x-www-form-urlencoded"
+    "User-Agent" => "Ruby.Pipedrive.Api",
+    "Accept" => "application/json",
+    "Content-Type" => "application/x-www-form-urlencoded"
   }
 
   # Base class for setting HTTParty configurations globally
   class Base < OpenStruct
 
     include HTTParty
-    
+
     base_uri 'https://api.pipedrive.com/v1'
     headers HEADERS
     format :json
@@ -28,7 +28,6 @@ module Pipedrive
     # Create a new Pipedrive::Base object.
     #
     # Only used internally
-    #
     # @param [Hash] attributes
     # @return [Pipedrive::Base]
     def initialize(attrs = {})
@@ -52,11 +51,20 @@ module Pipedrive
     def update(opts = {})
       res = put "#{resource_path}/#{id}", :body => opts
       if res.success?
-        res['data'] = Hash[res['data'].map {|k, v| [k.to_sym, v] }]
+        res['data'] = Hash[res['data'].map { |k, v| [k.to_sym, v] }]
         @table.merge!(res['data'])
       else
         false
       end
+    end
+
+    ##
+    # Deletes the object
+    # @param [Hash] opts
+    # @return [Object]
+    def destroy(opts = {})
+      res = delete "#{resource_path}/#{id}"
+      res.ok? ? res : bad_response(res, opts)
     end
 
     class << self
@@ -72,7 +80,7 @@ module Pipedrive
       # Examines a bad response and raises an appropriate exception
       #
       # @param [HTTParty::Response] response
-      def bad_response(response, params={})
+      def bad_response(response, params = {})
         puts params.inspect
         if response.class == HTTParty::Response
           raise HTTParty::ResponseError, response
@@ -80,42 +88,42 @@ module Pipedrive
         raise StandardError, 'Unknown error'
       end
 
-      def new_list( attrs )
-        attrs['data'].is_a?(Array) ? attrs['data'].map {|data| self.new( 'data' => data ) } : []
+      def new_list(attrs)
+        attrs['data'].is_a?(Array) ? attrs['data'].map { |data| self.new('data' => data) } : []
       end
 
-      def all(response = nil, options={},get_absolutely_all=false)
+      def all(response = nil, options = {}, get_absolutely_all = false)
         res = response || get(resource_path, options)
         if res.ok?
-          data = res['data'].nil? ? [] : res['data'].map{|obj| new(obj)}
+          data = res['data'].nil? ? [] : res['data'].map { |obj| new(obj) }
           if get_absolutely_all && res['additional_data']['pagination'] && res['additional_data']['pagination'] && res['additional_data']['pagination']['more_items_in_collection']
-            options[:query] = options[:query].merge({:start => res['additional_data']['pagination']['next_start']})
-            data += self.all(nil,options,true)
+            options[:query] = options[:query].merge({ :start => res['additional_data']['pagination']['next_start'] })
+            data += self.all(nil, options, true)
           end
           data
         else
-          bad_response(res,attrs)
+          bad_response(res, attrs)
         end
       end
 
-      def create( opts = {} )
+      def create(opts = {})
         res = post resource_path, :body => opts
         if res.success?
           res['data'] = opts.merge res['data']
           new(res)
         else
-          bad_response(res,opts)
+          bad_response(res, opts)
         end
       end
-      
+
       def find(id)
         res = get "#{resource_path}/#{id}"
-        res.ok? ? new(res) : bad_response(res,id)
+        res.ok? ? new(res) : bad_response(res, id)
       end
 
-      def find_by_name(name, opts={})
+      def find_by_name(name, opts = {})
         res = get "#{resource_path}/find", :query => { :term => name }.merge(opts)
-        res.ok? ? new_list(res) : bad_response(res,{:name => name}.merge(opts))
+        res.ok? ? new_list(res) : bad_response(res, { :name => name }.merge(opts))
       end
 
       def resource_path
