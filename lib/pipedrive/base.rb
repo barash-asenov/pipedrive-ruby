@@ -92,17 +92,12 @@ module Pipedrive
         attrs['data'].is_a?(Array) ? attrs['data'].map { |data| self.new('data' => data) } : []
       end
 
-      def all(response = nil, options = {}, get_absolutely_all = false)
-        res = response || get(resource_path, options)
+      def all(response = nil, options = {})
+        res = response || get(resource_path, query: options)
         if res.ok?
-          data = res['data'].nil? ? [] : res['data'].map { |obj| new(obj) }
-          if get_absolutely_all && res['additional_data']['pagination'] && res['additional_data']['pagination'] && res['additional_data']['pagination']['more_items_in_collection']
-            options[:query] = options[:query].merge({ :start => res['additional_data']['pagination']['next_start'] })
-            data += self.all(nil, options, true)
-          end
-          data
+          new_list(res)
         else
-          bad_response(res, attrs)
+          bad_response(res, options)
         end
       end
 
@@ -122,8 +117,22 @@ module Pipedrive
       end
 
       def find_by_name(name, opts = {})
-        res = get "#{resource_path}/find", :query => { :term => name }.merge(opts)
-        res.ok? ? new_list(res) : bad_response(res, { :name => name }.merge(opts))
+        klass = self.name.split('::').last
+        case klass
+        when 'Pipeline'
+          self.name.constantize.all.find { |i| i.name == name }
+        else
+          res = get "#{resource_path}/find", :query => { :term => name }.merge(opts)
+          if res.ok?
+            list_items = new_list(res)
+            return list_items if list_items.count <= 1
+
+            # If fuzzy match generates more than one result, search by exact result.
+            list_items.filter { |item| item.name == name }
+          else
+            bad_response(res, { :name => name }.merge(opts))
+          end
+        end
       end
 
       def resource_path
