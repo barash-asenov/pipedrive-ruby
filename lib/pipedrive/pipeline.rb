@@ -18,17 +18,14 @@ module Pipedrive
       Pipedrive::Deal.all(get("#{resource_path}/#{id}/deals", query: stage_id.present? ? { stage_id: stage_id } : {}))
     end
 
+    def remove_stages(stage_ids)
+      res = delete '/stages', body: { ids: stage_ids }
+      res.ok? ? res : bad_response(res)
+    end
+
     class << self
       def find_or_create_by_name(name, opts = {})
         find_by_name(name) || create(opts.merge(name: name))
-      end
-
-      def remove_all_stages
-        stage_ids = Stage.all(get('/stages', query: { pipeline_id: id }))
-                         .map(&:id)
-
-        res = delete '/stages', body: { ids: stage_ids }
-        res.ok? ? res : bad_response(res)
       end
     end
   end
