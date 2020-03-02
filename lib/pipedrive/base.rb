@@ -85,6 +85,7 @@ module Pipedrive
         if response.class == HTTParty::Response
           raise HTTParty::ResponseError, response
         end
+
         raise StandardError, 'Unknown error'
       end
 
