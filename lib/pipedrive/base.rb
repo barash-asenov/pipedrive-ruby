@@ -47,12 +47,13 @@ module Pipedrive
     # Updates the object.
     #
     # @param [Hash] opts
-    # @return [Boolean]
     def update(opts = {})
+      puts "#{resource_path}/#{id}"
+
       res = put "#{resource_path}/#{id}", :body => opts
       if res.success?
         res['data'] = Hash[res['data'].map { |k, v| [k.to_sym, v] }]
-        @table.merge!(res['data'])
+        OpenStruct.new(@table.merge!(res['data']))
       else
         false
       end
@@ -81,7 +82,6 @@ module Pipedrive
       #
       # @param [HTTParty::Response] response
       def bad_response(response, params = {})
-        puts params.inspect
         if response.class == HTTParty::Response
           raise HTTParty::ResponseError, response
         end
