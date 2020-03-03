@@ -48,8 +48,6 @@ module Pipedrive
     #
     # @param [Hash] opts
     def update(opts = {})
-      puts "#{resource_path}/#{id}"
-
       res = put "#{resource_path}/#{id}", :body => opts
       if res.success?
         res['data'] = Hash[res['data'].map { |k, v| [k.to_sym, v] }]
@@ -94,6 +92,8 @@ module Pipedrive
       end
 
       def all(response = nil, options = {})
+        puts response
+        puts options
         res = response || get(resource_path, query: options)
         if res.ok?
           new_list(res)

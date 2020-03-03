@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "user_id": 11366824,
+    "deal_id": 390,
+    "person_id": 275,
+    "org_id": 238,
+    "content": "some-note",
+    "add_time": "2020-03-03 14:12:52",
+    "update_time": "2020-03-03 14:12:52",
+    "active_flag": true,
+    "pinned_to_deal_flag": false,
+    "pinned_to_person_flag": false,
+    "pinned_to_organization_flag": false,
+    "last_update_user_id": null,
+    "organization": {
+      "name": "Einsdrei-Charlotte-Samuel-Zwo PartG"
+    },
+    "person": {
+      "name": "Sylvia Fischer"
+    },
+    "deal": {
+      "title": "Einsdrei-Charlotte-Samuel-Zwo PartG On Sale: Einsneun-Zwo-Einsacht-Kaufmann REIT-AG deal"
+    },
+    "user": {
+      "email": "asenov@carlfinance.de",
+      "name": "Barash Asenov",
+      "icon_url": null,
+      "is_you": true
+    }
+  }
+}

@@ -45,6 +45,28 @@ class TestPipedriveDeal < Test::Unit::TestCase
     assert_equal 72_312, deal.org_id
   end
 
+  should 'add note for a deal' do
+    deal_id = 15
+
+    stub_request(:get, "https://api.pipedrive.com/v1/deals/#{deal_id}?api_token=some-token")
+      .to_return(
+        status: 200,
+        body: File.read(File.join(File.dirname(__FILE__), 'data', 'deal/read_one_deal_body.json'))
+      )
+
+    deal = ::Pipedrive::Deal.find(deal_id)
+
+    stub_request(:post, 'https://api.pipedrive.com/v1/notes?api_token=some-token')
+      .to_return(
+        status: 200,
+        body: File.read(File.join(File.dirname(__FILE__), 'data', 'note/add_note_body.json'))
+      )
+    
+    note = deal.add_note('some-note')
+
+    assert_equal 'some-note', note.content
+  end
+
   should 'get one deal' do
     deal_id = 15
 
@@ -100,8 +122,6 @@ class TestPipedriveDeal < Test::Unit::TestCase
       )
 
     updated_deal = deal.update({ title: update_title })
-
-    puts updated_deal
 
     assert_equal update_title, updated_deal.title
   end
