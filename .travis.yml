@@ -4,4 +4,4 @@ rvm:
   - jruby
 jobs:
   include:
-    - script: rake test
+    - script: bundle exec rake test
