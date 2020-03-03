@@ -107,16 +107,15 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler
   coveralls
   httparty
-  jeweler (>= 1.8.4)
+  jeweler
   json
-  multi_xml (>= 0.5.2)
-  rdoc (~> 3.12)
+  multi_xml
+  rdoc
   shoulda
   test-unit
   webmock
 
 BUNDLED WITH
-   2.1.2
+   2.1.4
