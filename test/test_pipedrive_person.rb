@@ -7,14 +7,14 @@ class TestPipedrivePerson < Test::Unit::TestCase
     Pipedrive.authenticate('some-token')
   end
 
-  should 'execute a valid person request' do
-    body = {
-      'email' => ['john@dope.org'],
-      'name' => 'John Dope',
-      'org_id' => '404',
-      'phone' => ['0123456789']
-    }
+  body = {
+    'email' => ['john@dope.org'],
+    'name' => 'John Dope',
+    'org_id' => '404',
+    'phone' => ['0123456789']
+  }
 
+  should 'execute a valid person request' do
     stub_request(:post, 'https://api.pipedrive.com/v1/persons?api_token=some-token')
       .with(body: body, headers: {
               'Accept' => 'application/json',
@@ -43,7 +43,26 @@ class TestPipedrivePerson < Test::Unit::TestCase
   end
 
   should 'return bad_response on errors' do
-    # TODO
-    # flunk "to be tested"
+    stub_request(:post, 'https://api.pipedrive.com/v1/persons?api_token=some-token')
+      .with(body: body,
+            headers: {
+              'Accept' => 'application/json',
+              'Content-Type' => 'application/x-www-form-urlencoded',
+              'User-Agent' => 'Ruby.Pipedrive.Api'
+            })
+      .to_return(
+        status: 401,
+        body: File.read(File.join(File.dirname(__FILE__), 'data', 'error_response.json')),
+        headers: {
+          'server' => 'nginx/1.2.4',
+          'date' => 'Fri, 01 Mar 2020 14:01:03 GMT',
+          'content-type' => 'application/json',
+          'content-length' => '1260',
+          'connection' => 'keep-alive',
+          'access-control-allow-origin' => '*'
+        }
+      )
+
+    assert_raises(HTTParty::ResponseError) { ::Pipedrive::Deal.create(body) }
   end
 end
