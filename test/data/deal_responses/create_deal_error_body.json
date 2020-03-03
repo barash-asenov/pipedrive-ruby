@@ -1,0 +1,5 @@
+{
+  "success": false,
+  "error": "unauthorized access",
+  "errorCode": 401
+}

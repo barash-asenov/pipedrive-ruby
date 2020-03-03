@@ -9,15 +9,15 @@ class TestPipedriveDeal < Test::Unit::TestCase
     Pipedrive.authenticate('some-token')
   end
 
-  should 'execute a valid person request' do
-    body = {
-      'currency' => 'EUR',
-      'org_id' => '72312',
-      'title' => 'Dope Deal',
-      'value' => '37k'
-    }
+  body = {
+    'currency' => 'EUR',
+    'org_id' => '72312',
+    'title' => 'Dope Deal',
+    'value' => '37k'
+  }
 
-    stub_request(:post, 'http://api.pipedrive.com/v1/deals?api_token=some-token')
+  should 'execute a valid person request' do
+    stub_request(:post, 'https://api.pipedrive.com/v1/deals?api_token=some-token')
       .with(body: body,
             headers: {
               'Accept' => 'application/json',
@@ -26,10 +26,10 @@ class TestPipedriveDeal < Test::Unit::TestCase
             })
       .to_return(
         status: 200,
-        body: File.read(File.join(File.dirname(__FILE__), 'data', 'create_deal_body.json')),
+        body: File.read(File.join(File.dirname(__FILE__), 'data', 'deal_responses/create_deal_body.json')),
         headers: {
           'server' => 'nginx/1.2.4',
-          'date' => 'Fri, 01 Mar 2013 14:01:03 GMT',
+          'date' => 'Fri, 01 Mar 2020 14:01:03 GMT',
           'content-type' => 'application/json',
           'content-length' => '1260',
           'connection' => 'keep-alive',
@@ -46,7 +46,26 @@ class TestPipedriveDeal < Test::Unit::TestCase
   end
 
   should 'return bad_response on errors' do
-    # TODO
-    # flunk "to be tested"
+    stub_request(:post, 'https://api.pipedrive.com/v1/deals?api_token=invalid-token')
+      .with(body: body,
+            headers: {
+              'Accept' => 'application/json',
+              'Content-Type' => 'application/x-www-form-urlencoded',
+              'User-Agent' => 'Ruby.Pipedrive.Api'
+            })
+      .to_return(
+        status: 401,
+        body: File.read(File.join(File.dirname(__FILE__), 'data', 'deal_responses/create_deal_error_body.json')),
+        headers: {
+          'server' => 'nginx/1.2.4',
+          'date' => 'Fri, 01 Mar 2020 14:01:03 GMT',
+          'content-type' => 'application/json',
+          'content-length' => '1260',
+          'connection' => 'keep-alive',
+          'access-control-allow-origin' => '*'
+        }
+      )
+
+    deal = ::Pipedrive::Deal.create(body)
   end
 end
