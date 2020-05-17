@@ -126,7 +126,6 @@ module Pipedrive
         field = arguments&.keys&.first
         value = arguments&.values&.first
         additional_args = arguments&.reject { |key, _| key.eql?(field) }
-        puts "arguments: #{args.first} field: #{field}, value: #{value}, additional_args: #{additional_args}"
         res = get "#{resource_path}/search", query: { term: value, fields: field, exact_match: true, **additional_args }
 
         new_list(res).first if res.ok?
