@@ -21,6 +21,7 @@
 
     Pipedrive::Person.create( params )
     Pipedrive::Person.find( <ID >)
+    Pipedrive::Person.find_by(field: value, **additional_params)
 
     Pipedrive::Note.create( params )
 

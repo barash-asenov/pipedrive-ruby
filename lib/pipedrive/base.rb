@@ -48,7 +48,7 @@ module Pipedrive
     #
     # @param [Hash] opts
     def update(opts = {})
-      res = put "#{resource_path}/#{id}", :body => opts
+      res = put "#{resource_path}/#{id}", body: opts
       if res.success?
         res['data'] = Hash[res['data'].map { |k, v| [k.to_sym, v] }]
         OpenStruct.new(@table.merge!(res['data']))
@@ -69,17 +69,15 @@ module Pipedrive
     class << self
       # Sets the authentication credentials in a class variable.
       #
-      # @param [String] email cl.ly email
-      # @param [String] password cl.ly password
       # @return [Hash] authentication credentials
       def authenticate(token)
-        default_params :api_token => token
+        default_params api_token: token
       end
 
       # Examines a bad response and raises an appropriate exception
       #
       # @param [HTTParty::Response] response
-      def bad_response(response, params = {})
+      def bad_response(response, _params = {})
         if response.class == HTTParty::Response
           raise HTTParty::ResponseError, response
         end
@@ -88,7 +86,13 @@ module Pipedrive
       end
 
       def new_list(attrs)
-        attrs['data'].is_a?(Array) ? attrs['data'].map { |data| self.new('data' => data) } : []
+        if attrs['data'].is_a?(Array)
+          attrs['data'].map { |data| new('data' => data) }
+        elsif attrs['data'].is_a?(Hash) && attrs['data']['items'].any?
+          attrs['data']['items'].map { |data| new('data' => data['item']) }
+        else
+          []
+        end
       end
 
       def all(response = nil, options = {})
@@ -101,7 +105,7 @@ module Pipedrive
       end
 
       def create(opts = {})
-        res = post resource_path, :body => opts
+        res = post resource_path, body: opts
         if res.success?
           res['data'] = opts.merge res['data']
           new(res)
@@ -115,13 +119,26 @@ module Pipedrive
         res.ok? ? new(res) : bad_response(res, id)
       end
 
+      def find_by(*args)
+        return unless args.is_a?(Array)
+
+        arguments = args.first
+        field = arguments&.keys&.first
+        value = arguments&.values&.first
+        additional_args = arguments&.reject { |key, _| key.eql?(field) }
+        puts "arguments: #{args.first} field: #{field}, value: #{value}, additional_args: #{additional_args}"
+        res = get "#{resource_path}/search", query: { term: value, fields: field, exact_match: true, **additional_args }
+
+        new_list(res).first if res.ok?
+      end
+
       def find_by_name(name, opts = {})
         klass = self.name.split('::').last
         case klass
         when 'Pipeline'
           self.name.constantize.all.find { |i| i.name == name }
         else
-          res = get "#{resource_path}/find", :query => { :term => name }.merge(opts)
+          res = get "#{resource_path}/find", query: { term: name }.merge(opts)
           if res.ok?
             list_items = new_list(res)
             return list_items if list_items.count <= 1
@@ -129,7 +146,7 @@ module Pipedrive
             # If fuzzy match generates more than one result, search by exact result.
             list_items.filter { |item| item.name == name }
           else
-            bad_response(res, { :name => name }.merge(opts))
+            bad_response(res, { name: name }.merge(opts))
           end
         end
       end
