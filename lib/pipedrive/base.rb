@@ -106,10 +106,12 @@ module Pipedrive
 
       def create(opts = {})
         res = post resource_path, body: opts
-        return unless res.success?
-
-        res['data'] = opts.merge res['data']
-        new(res)
+        if res.success?
+          res['data'] = opts.merge res['data']
+          new(res)
+        else
+          bad_response(res, opts)
+        end
       end
 
       def find(id)

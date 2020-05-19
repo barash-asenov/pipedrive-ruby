@@ -63,6 +63,6 @@ class TestPipedrivePerson < Test::Unit::TestCase
         }
       )
 
-    assert_nil(Pipedrive::Deal.create(body))
+    assert_raise(HTTParty::ResponseError) { Pipedrive::Deal.create(body) }
   end
 end
