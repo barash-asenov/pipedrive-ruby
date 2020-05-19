@@ -106,17 +106,15 @@ module Pipedrive
 
       def create(opts = {})
         res = post resource_path, body: opts
-        if res.success?
-          res['data'] = opts.merge res['data']
-          new(res)
-        else
-          bad_response(res, opts)
-        end
+        return unless res.success?
+
+        res['data'] = opts.merge res['data']
+        new(res)
       end
 
       def find(id)
         res = get "#{resource_path}/#{id}"
-        res.ok? ? new(res) : bad_response(res, id)
+        res.ok? ? new(res) : nil
       end
 
       def find_by(*args)
@@ -144,8 +142,6 @@ module Pipedrive
 
             # If fuzzy match generates more than one result, search by exact result.
             list_items.filter { |item| item.name == name }
-          else
-            bad_response(res, { name: name }.merge(opts))
           end
         end
       end

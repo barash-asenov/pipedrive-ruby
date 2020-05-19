@@ -60,10 +60,8 @@ class TestPipedriveOrganization < Test::Unit::TestCase
         }
       )
 
-    assert_raises(HTTParty::ResponseError) do
-      ::Pipedrive::Deal.create({
-                                 'name' => 'Dope.org'
-                               })
-    end
+    assert_nil(::Pipedrive::Deal.create({
+                                          'name' => 'Dope.org'
+                                        }))
   end
 end
