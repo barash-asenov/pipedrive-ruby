@@ -17,7 +17,7 @@ module Pipedrive
 
     def add_participant(opts = {})
       res = post "#{resource_path}/#{id}/participants", :body => opts
-      res.success? ? res['data']['id'] : bad_response(res, opts)
+      res.success? ? res.dig('data', 'id') || 'exists' : bad_response(res, opts)
     end
 
     def participants
